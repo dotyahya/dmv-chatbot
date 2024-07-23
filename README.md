@@ -12,7 +12,7 @@ Welcome to the Domestic Violence Support Chatbot project. This AI-driven chatbot
 - **RAG Approach**: Combines retrieval and generation models to provide accurate and context-aware responses.
 - **Pinecone Vector Database**: Efficiently manages and retrieves vector embeddings for high-performance searches.
 - **Text Embeddings (Ada 002)**: Uses the `text-embedding-ada-002` model to generate meaningful text embeddings.
-- **GPT-4o Mini**: Employs GPT-4o Mini for generating responses based on retrieved information.
+- **GPT-4o Mini**: Employs `gpt-4o mini` for generating responses based on retrieved information.
 
 ## Usage
 1. **Configure the Vector Database:**
@@ -24,7 +24,7 @@ Welcome to the Domestic Violence Support Chatbot project. This AI-driven chatbot
 3. **Run the Chatbot:**
    Start the chatbot server:
    ```bash
-   streamlit run app.py
+   streamlit run dmv_bot.py
 
 ## Known Issues
 The chatbot may produce hallucinated responses due to incomplete data preprocessing. Ongoing improvements are being made to enhance data accuracy and reliability.
