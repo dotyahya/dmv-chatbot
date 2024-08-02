@@ -61,6 +61,10 @@ async def chat_endpoint(request: ChatRequest):
         # generating the response
         response = qa({"question": prompt, "chat_history": request.chat_history})
         answer = response.get("answer", "")
+
+        # check if the response is empty or indicates no relevant information
+        if not answer or "I don't know" in answer:
+            answer = "Sorry, no information available on this topic as of yet."
         
     except Exception as e:
         # handle exceptions and provide a fallback message
