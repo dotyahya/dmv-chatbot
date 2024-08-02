@@ -43,11 +43,25 @@ class ChatResponse(BaseModel):
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     try:
-        response = qa({"question": request.question, "chat_history": request.chat_history})
+        # context awareness
+        prompt_template = (
+            "You are a compassionate and knowledgeable assistant specializing in domestic violence issues. "
+            "Answer the following question based on the provided context in a supportive and informative manner.\n\n"
+            "Context: {context}\n\n"
+            "Question: {question}\n\n"
+            "Answer in a concise and empathetic manner."
+        )
+        
+        # merging chat history into context
+        context = "\n".join([f"User: {item['question']}\nBot: {item['answer']}" for item in request.chat_history])
+        
+        # forming the final prompt
+        prompt = prompt_template.format(context=context, question=request.question)
+        
+        # generating the response
+        response = qa({"question": prompt, "chat_history": request.chat_history})
         answer = response.get("answer", "")
-        # check if the response is empty or indicates no relevant information
-        if not answer or "I don't know" in answer:
-            answer = "Sorry, no information available on this topic as of yet."
+        
     except Exception as e:
         # handle exceptions and provide a fallback message
         raise HTTPException(status_code=503, detail="System is currently experiencing high load. Please try again later.")
