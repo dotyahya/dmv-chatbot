@@ -1,9 +1,9 @@
 import os
-import time
-import random
+# import time
+# import random
 import warnings
 import streamlit as st
-import threading
+# import threading
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains import ConversationalRetrievalChain
@@ -19,52 +19,7 @@ vectorstore = PineconeVectorStore(index_name=os.environ["INDEX_NAME"], embedding
 chat = ChatOpenAI(verbose=True, temperature=0, model_name="gpt-4o-mini", max_tokens=250)
 qa = ConversationalRetrievalChain.from_llm(llm=chat, chain_type="stuff", retriever=vectorstore.as_retriever())
 
-# if "chat_history" not in st.session_state:
-#     st.session_state.chat_history = []
-
-# # display chat messages from history on app rerun
-# st.title("Domestic Violence One-Stop")
-# for question, answer in st.session_state.chat_history:
-#     with st.chat_message("user"):
-#         st.markdown(question)
-#     with st.chat_message("assistant"):
-#         st.markdown(answer)
-
-# # accept user input
-# if prompt := st.chat_input("Ask me anything about domestic violence"):
-#     with st.chat_message("user"):
-#         st.markdown(prompt)
-
-#     response = qa({"question": prompt, "chat_history": st.session_state.chat_history})
-#     answer = response["answer"]
-
-#     st.session_state.chat_history.append((prompt, answer))
-
-#     with st.chat_message("assistant"):
-#         st.markdown(answer)
-
-# if "chat_history" not in st.session_state:
-#     st.session_state.chat_history = []
-
-# handle responses with a timeout
-# def get_response_with_timeout(prompt, chat_history):
-#     # function to get the response from the QA model
-#     def get_response():
-#         nonlocal response
-#         try:
-#             response = qa({"question": prompt, "chat_history": chat_history})
-#         except Exception as e:
-#             response = {"answer": "An error occurred while processing your request."}
-
-#     response = None
-#     thread = threading.Thread(target=get_response)
-#     thread.start()
-#     thread.join(timeout=20) # timeout in seconds
-
-#     if thread.is_alive():
-#         return "The system is currently experiencing high load. Please try again later."
-#     # return response.get("answer", "Sorry, no information available on this topic as of yet.")
-
+# storing chat history
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -82,10 +37,25 @@ if prompt := st.chat_input("Ask me anything about domestic violence"):
         st.markdown(prompt)
     
     try:
-        response = qa({"question": prompt, "chat_history": st.session_state.chat_history})
+        # context awareness
+        prompt_template = (
+            "You are a compassionate and knowledgeable assistant specializing in domestic violence issues. "
+            "Answer the following question based on the provided context in a supportive and informative manner.\n\n"
+            "Context: {context}\n\n"
+            "Question: {question}\n\n"
+            "Answer in a concise and empathetic manner."
+        )
+
+        # merging chat history into context
+        context = "\n".join([f"User: {q}\nBot: {a}" for q, a in st.session_state.chat_history])
+
+        # forming the final prompt
+        formatted_prompt = prompt_template.format(context=context, question=prompt)
+
+        response = qa({"question": formatted_prompt, "chat_history": st.session_state.chat_history})
         answer = response.get("answer", "")
         
-        # Check if the response is empty or indicates no relevant information
+        # check if the response is empty or indicates no relevant information
         if not answer or "I don't know" in answer:
             answer = "Sorry, no information available on this topic as of yet."
     
